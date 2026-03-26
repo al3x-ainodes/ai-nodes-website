@@ -664,33 +664,106 @@
             }
 
             .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 1rem;
+                display: none;
             }
 
             section {
-                padding: 4rem 1rem;
+                padding: 3rem 1rem;
+            }
+
+            .hero {
+                padding-top: 6rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .section-subtitle {
+                font-size: 0.95rem;
+            }
+
+            .workflow-3d {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 1rem;
             }
 
             .workflow-node {
-                width: 140px;
-                height: 140px;
+                width: 100%;
+                height: auto;
+                padding: 1.5rem;
+                flex-direction: row;
+                gap: 1rem;
+            }
+
+            .workflow-node .icon {
+                font-size: 2rem;
+                margin-bottom: 0;
+            }
+
+            .workflow-node .label {
+                font-size: 1rem;
+            }
+
+            .workflow-node .sublabel {
+                display: none;
+            }
+
+            .workflow-arrow {
+                display: none;
+            }
+
+            .industry-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .demo-tabs {
+                flex-direction: column;
+            }
+
+            .demo-tab {
+                width: 100%;
+            }
+
+            .demo-workflow {
+                flex-direction: column;
             }
 
             .demo-node {
-                width: 100px;
-                height: 100px;
+                width: 100%;
+                height: auto;
+                padding: 1rem;
             }
 
-            .workflow-arrow, .demo-arrow {
+            .demo-arrow {
                 display: none;
             }
 
             .pricing-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
-                padding: 0 1rem;
             }
 
             .pricing-card.featured {
@@ -700,11 +773,54 @@
             .pricing-card {
                 padding: 1.5rem;
             }
+
+            .pricing-card .price {
+                font-size: 2rem;
+            }
+
+            .contact-form {
+                padding: 0 0.5rem;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 16px;
+            }
+
+            footer {
+                padding: 2rem 1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .scroll-indicator {
+                display: none;
+            }
+
+            .floating-nodes {
+                display: none;
+            }
         }
 
         @media (max-width: 900px) {
             .pricing-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .industry-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .benefits-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
             }
         }
 
