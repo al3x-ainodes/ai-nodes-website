@@ -656,7 +656,7 @@
             stroke: var(--cyan);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 600px) {
             nav {
                 flex-direction: column;
                 gap: 1rem;
@@ -821,6 +821,12 @@
 
             .hero h1 {
                 font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
             }
         }
 
