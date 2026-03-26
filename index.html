@@ -686,6 +686,25 @@
             .workflow-arrow, .demo-arrow {
                 display: none;
             }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .pricing-card {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         .glow {
