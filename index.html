@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Nodes - n8n AI Workflow Automation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --cyan: #23DCF0;
+            --purple: #9A23F0;
+            --magenta: #F73674;
+            --dark-bg: #000000;
+            --dark-blue: #000396;
+            --dark-accent: #040025;
+            --white: #ffffff;
+            --gray: #999999;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--cyan), var(--purple), var(--magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(35, 220, 240, 0.2);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyan);
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(35, 220, 240, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--cyan);
+            color: var(--cyan);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cyan);
+            color: var(--dark-bg);
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        section {
+            min-height: 100vh;
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 8rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: var(--gray);
+            max-width: 700px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .floating-nodes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .workflow-section {
+            background: linear-gradient(180deg, transparent, rgba(35, 220, 240, 0.05), transparent);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        .workflow-visualizer {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+
+        .workflow-3d {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: nowrap;
+            padding: 3rem;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            overflow-x: auto;
+        }
+
+        .workflow-node {
+            width: 180px;
+            height: 180px;
+            border-radius: 20px;
+            background: rgba(35, 220, 240, 0.1);
+            border: 2px solid rgba(35, 220, 240, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workflow-node::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .workflow-node:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: var(--cyan);
+            box-shadow: 0 20px 40px rgba(35, 220, 240, 0.2);
+        }
+
+        .workflow-node:hover::before {
+            opacity: 0.1;
+        }
+
+        .workflow-node.active {
+            border-color: var(--cyan);
+            box-shadow: 0 0 30px rgba(35, 220, 240, 0.4);
+        }
+
+        .workflow-node .icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .workflow-node .label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .workflow-node .sublabel {
+            font-size: 0.75rem;
+            color: var(--gray);
+            position: relative;
+            z-index: 1;
+        }
+
+        .workflow-arrow {
+            font-size: 3rem;
+            color: var(--cyan);
+            animation: pulse-arrow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-arrow {
+            0%, 100% { opacity: 0.3; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+
+        .workflow-description {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(35, 220, 240, 0.05);
+            border-radius: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .workflow-description h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--cyan);
+        }
+
+        .industries {
+            background: linear-gradient(180deg, transparent, rgba(154, 35, 240, 0.05), transparent);
+        }
+
+        .industry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .industry-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s;
+        }
+
+        .industry-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--purple);
+            box-shadow: 0 20px 40px rgba(154, 35, 240, 0.2);
+        }
+
+        .industry-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .industry-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .industry-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .industry-card .automation-list {
+            margin-top: 1rem;
+            list-style: none;
+        }
+
+        .industry-card .automation-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--cyan);
+        }
+
+        .benefits {
+            background: linear-gradient(180deg, transparent, rgba(247, 54, 116, 0.05), transparent);
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .benefit-card {
+            background: linear-gradient(135deg, rgba(35, 220, 240, 0.1), rgba(154, 35, 240, 0.1));
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .benefit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+        }
+
+        .benefit-card .number {
+            font-size: 4rem;
+            font-weight: 900;
+            color: rgba(35, 220, 240, 0.2);
+            position: absolute;
+            top: -10px;
+            right: 20px;
+        }
+
+        .benefit-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .benefit-card p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .demo-section {
+            text-align: center;
+        }
+
+        .interactive-demo {
+            max-width: 1000px;
+            margin: 3rem auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 30px;
+            padding: 3rem;
+            border: 1px solid rgba(35, 220, 240, 0.3);
+            position: relative;
+        }
+
+        .demo-tabs {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .demo-tab {
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            color: var(--white);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .demo-tab:hover, .demo-tab.active {
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            border-color: transparent;
+        }
+
+        .demo-content {
+            display: none;
+        }
+
+        .demo-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .demo-workflow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 2rem;
+            background: rgba(35, 220, 240, 0.05);
+            border-radius: 20px;
+            margin-top: 1rem;
+        }
+
+        .demo-node {
+            width: 120px;
+            height: 120px;
+            border-radius: 15px;
+            background: rgba(154, 35, 240, 0.2);
+            border: 2px solid rgba(154, 35, 240, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .demo-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(154, 35, 240, 0.5);
+        }
+
+        .demo-node .icon {
+            font-size: 2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .demo-node .label {
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        .demo-arrow {
+            font-size: 1.5rem;
+            color: var(--cyan);
+            animation: flow 1s ease-in-out infinite;
+        }
+
+        @keyframes flow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .demo-result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(35, 220, 240, 0.1);
+            border-radius: 15px;
+            border-left: 4px solid var(--cyan);
+        }
+
+        .demo-result h4 {
+            color: var(--cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .contact {
+            background: linear-gradient(180deg, transparent, rgba(35, 220, 240, 0.05));
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--cyan);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--cyan);
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+            color: var(--white);
+            padding: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        footer {
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer p {
+            color: var(--gray);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--cyan);
+            border-radius: 50%;
+            animation: particle-float 15s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes particle-float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-20px); }
+            60% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .scroll-indicator svg {
+            width: 30px;
+            height: 30px;
+            stroke: var(--cyan);
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            section {
+                padding: 4rem 1rem;
+            }
+
+            .workflow-node {
+                width: 140px;
+                height: 140px;
+            }
+
+            .demo-node {
+                width: 100px;
+                height: 100px;
+            }
+
+            .workflow-arrow, .demo-arrow {
+                display: none;
+            }
+        }
+
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px var(--cyan)); }
+            to { filter: drop-shadow(0 0 20px var(--purple)); }
+        }
+
+        .pricing {
+            background: linear-gradient(180deg, transparent, rgba(35, 220, 240, 0.03), transparent);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--cyan);
+            background: linear-gradient(135deg, rgba(35, 220, 240, 0.1), rgba(154, 35, 240, 0.1));
+            transform: scale(1.05);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-card .price {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-card .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--gray);
+        }
+
+        .pricing-card .description {
+            color: var(--gray);
+            margin-bottom: 2rem;
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-card ul li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .pricing-card ul li::before {
+            content: '✓';
+            color: var(--cyan);
+            font-weight: bold;
+        }
+
+        .badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas-container"></canvas>
+    
+    <div class="particles" id="particles"></div>
+
+    <nav>
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            <span class="gradient-text">AI Nodes</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#workflow">Workflow</a></li>
+            <li><a href="#industries">Industries</a></li>
+            <li><a href="#benefits">Benefits</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <button class="btn btn-primary" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Get Started</button>
+    </nav>
+
+    <section class="hero" id="hero">
+        <h1>Automate Your Business<br><span class="gradient-text">With AI Power</span></h1>
+        <p>We build custom n8n AI workflows that save you hours every day. From lead management to customer support - we handle the automation so you can focus on what matters.</p>
+        <div class="hero-buttons">
+            <button class="btn btn-primary" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Start Free Consultation</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('workflow').scrollIntoView({behavior: 'smooth'})">See How It Works</button>
+        </div>
+        <div class="scroll-indicator">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+            </svg>
+        </div>
+    </section>
+
+    <section class="workflow-section" id="workflow">
+        <h2 class="section-title">See <span class="gradient-text">AI Automation</span> in Action</h2>
+        <p class="section-subtitle">Watch how our n8n workflows connect your tools and automate repetitive tasks</p>
+        
+        <div class="workflow-visualizer">
+            <div class="workflow-3d" id="workflow3d">
+                <div class="workflow-node" data-info="Form submissions trigger the workflow, automatically capturing lead information">
+                    <span class="icon">📝</span>
+                    <span class="label">Lead Capture</span>
+                    <span class="sublabel">Form / Website</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-node" data-info="AI analyzes the lead, scores it, and categorizes by potential value">
+                    <span class="icon">🤖</span>
+                    <span class="label">AI Analysis</span>
+                    <span class="sublabel">GPT-4 Processing</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-node" data-info="Automatically segmented and routed to the right team member">
+                    <span class="icon">🎯</span>
+                    <span class="label">Smart Routing</span>
+                    <span class="sublabel">Auto-Assignment</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-node" data-info="Personalized follow-ups sent automatically via email and SMS">
+                    <span class="icon">💬</span>
+                    <span class="label">Auto Response</span>
+                    <span class="sublabel">Multi-channel</span>
+                </div>
+                <span class="workflow-arrow">→</span>
+                <div class="workflow-node" data-info="Tasks created, calendars updated, and CRM enriched automatically">
+                    <span class="icon">✅</span>
+                    <span class="label">Task Complete</span>
+                    <span class="sublabel">Full Integration</span>
+                </div>
+            </div>
+            
+            <div class="workflow-description" id="workflow-info">
+                <h3>📝 Lead Capture</h3>
+                <p>Hover over each step to see how it works. This workflow automatically captures leads from your website, analyzes them with AI, routes them to the right person, and sends personalized responses - all without any manual work.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="industries" id="industries">
+        <h2 class="section-title">Built for <span class="gradient-text">Your Industry</span></h2>
+        <p class="section-subtitle">Custom automations designed for small businesses and solo entrepreneurs</p>
+        
+        <div class="industry-grid">
+            <div class="industry-card">
+                <span class="icon">👩‍⚕️</span>
+                <h3>Medical Practices</h3>
+                <p>Gynecologists, Dentists, Therapists & More</p>
+                <ul class="automation-list">
+                    <li>📅 Automated appointment reminders</li>
+                    <li>📋 Patient intake form automation</li>
+                    <li>💊 Prescription refill requests</li>
+                    <li>📊 Follow-up care sequences</li>
+                    <li>🔒 HIPAA-compliant data handling</li>
+                </ul>
+            </div>
+            
+            <div class="industry-card">
+                <span class="icon">🔧</span>
+                <h3>Home Services</h3>
+                <p>Handymen, Plumbers, Electricians, HVAC</p>
+                <ul class="automation-list">
+                    <li>📞 Incoming call lead capture</li>
+                    <li>📅 Scheduling & dispatch automation</li>
+                    <li>📸 Photo request workflows</li>
+                    <li>⭐ Post-job review requests</li>
+                    <li>🔄 Recurring service reminders</li>
+                </ul>
+            </div>
+            
+            <div class="industry-card">
+                <span class="icon">🏠</span>
+                <h3>Real Estate</h3>
+                <p>Agents, Brokers, Property Managers</p>
+                <ul class="automation-list">
+                    <li>🏆 Lead qualification & scoring</li>
+                    <li>📱 Text-back automation</li>
+                    <li>📅 Showing scheduling</li>
+                    <li>📈 Market report delivery</li>
+                    <li>🔑 Transaction reminders</li>
+                </ul>
+            </div>
+            
+            <div class="industry-card">
+                <span class="icon">💼</span>
+                <h3>Professional Services</h3>
+                <p>Accountants, Lawyers, Consultants</p>
+                <ul class="automation-list">
+                    <li>📧 Client onboarding sequences</li>
+                    <li>📄 Document collection automation</li>
+                    <li>💰 Invoice & payment reminders</li>
+                    <li>📅 Meeting scheduling & reminders</li>
+                    <li>🎯 Cross-sell opportunities</li>
+                </ul>
+            </div>
+            
+            <div class="industry-card">
+                <span class="icon">🛒</span>
+                <h3>E-commerce & Retail</h3>
+                <p>Online Stores, Local Shops</p>
+                <ul class="automation-list">
+                    <li>🛍️ Abandoned cart recovery</li>
+                    <li>📦 Shipping notifications</li>
+                    <li>⭐ Review request sequences</li>
+                    <li>🎁 Loyalty program automation</li>
+                    <li>📊 Inventory alerts</li>
+                </ul>
+            </div>
+            
+            <div class="industry-card">
+                <span class="icon">🎨</span>
+                <h3>Creative & Wellness</h3>
+                <p>Photographers, Salons, Trainers</p>
+                <ul class="automation-list">
+                    <li>📸 Booking management</li>
+                    <li>🗓️ Availability sync</li>
+                    <li>💝 Re-engagement campaigns</li>
+                    <li>📱 Client communication hub</li>
+                    <li>🎁 Package expiration alerts</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="benefits" id="benefits">
+        <h2 class="section-title">Why <span class="gradient-text">AI Automation</span>?</h2>
+        <p class="section-subtitle">Stop wasting time on tasks that should run themselves</p>
+        
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <span class="number">1</span>
+                <h3>Save 15+ Hours Weekly</h3>
+                <p>Automate repetitive tasks like follow-ups, scheduling, and data entry. Our clients report saving at least 15 hours every week - time better spent on revenue-generating activities.</p>
+            </div>
+            
+            <div class="benefit-card">
+                <span class="number">2</span>
+                <h3>Never Miss a Lead</h3>
+                <p>While you're busy with clients, AI responds to inquiries instantly. No more lost leads due to slow response times. Our automation ensures 100% lead capture and follow-up.</p>
+            </div>
+            
+            <div class="benefit-card">
+                <span class="number">3</span>
+                <h3>Consistent Customer Experience</h3>
+                <p>Every customer gets the same high-quality experience, every time. Automation ensures nothing falls through the cracks, regardless of how busy you get.</p>
+            </div>
+            
+            <div class="benefit-card">
+                <span class="number">4</span>
+                <h3>Scale Without Burnout</h3>
+                <p>Handle 3x more business without working 3x harder. Our workflows grow with you, ensuring your systems don't break under increased demand.</p>
+            </div>
+            
+            <div class="benefit-card">
+                <span class="number">5</span>
+                <h3>Built on n8n</h3>
+                <p>We use n8n - the powerful, open-source automation platform. No monthly per-task fees. No vendor lock-in. You own your automation and can modify it anytime.</p>
+            </div>
+            
+            <div class="benefit-card">
+                <span class="number">6</span>
+                <h3>Quick Implementation</h3>
+                <p>Most workflows are live within 1-2 weeks. We handle everything from setup to training, ensuring you're comfortable before we hand over the keys.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section" id="demo">
+        <h2 class="section-title">Interactive <span class="gradient-text">Workflow Demos</span></h2>
+        <p class="section-subtitle">Click on each industry to see a sample automation workflow</p>
+        
+        <div class="interactive-demo">
+            <div class="demo-tabs">
+                <button class="demo-tab active" data-demo="medical">🏥 Medical</button>
+                <button class="demo-tab" data-demo="handyman">🔧 Handyman</button>
+                <button class="demo-tab" data-demo="realtor">🏠 Realtor</button>
+                <button class="demo-tab" data-demo="ecommerce">🛒 E-commerce</button>
+            </div>
+            
+            <div class="demo-content active" id="demo-medical">
+                <h3 style="margin-bottom: 1rem;">Patient Intake & Follow-up Automation</h3>
+                <div class="demo-workflow">
+                    <div class="demo-node">
+                        <span class="icon">📋</span>
+                        <span class="label">Online Booking</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📧</span>
+                        <span class="label">Intake Form</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">🤖</span>
+                        <span class="label">AI Review</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">💊</span>
+                        <span class="label">Prep Chart</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📅</span>
+                        <span class="label">Reminder</span>
+                    </div>
+                </div>
+                <div class="demo-result">
+                    <h4>Result:</h4>
+                    <p>Patient receives automated intake forms, AI flags important health notes, staff is prepped before appointment, and automated reminders reduce no-shows by 60%.</p>
+                </div>
+            </div>
+            
+            <div class="demo-content" id="demo-handyman">
+                <h3 style="margin-bottom: 1rem;">Service Call Automation</h3>
+                <div class="demo-workflow">
+                    <div class="demo-node">
+                        <span class="icon">📞</span>
+                        <span class="label">Call/Text</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📍</span>
+                        <span class="label">Service Type</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">🗺️</span>
+                        <span class="label">Route Tech</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📱</span>
+                        <span class="label">Confirm</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">⭐</span>
+                        <span class="label">Review Req</span>
+                    </div>
+                </div>
+                <div class="demo-result">
+                    <h4>Result:</h4>
+                    <p>Calls are automatically logged, routed to the right technician based on location and specialty, customers get instant confirmation, and review requests go out automatically after job completion.</p>
+                </div>
+            </div>
+            
+            <div class="demo-content" id="demo-realtor">
+                <h3 style="margin-bottom: 1rem;">Lead-to-Showing Automation</h3>
+                <div class="demo-workflow">
+                    <div class="demo-node">
+                        <span class="icon">🏠</span>
+                        <span class="label">Zillow/Website</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">🏆</span>
+                        <span class="label">Lead Score</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📱</span>
+                        <span class="label">Text Back</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📅</span>
+                        <span class="label">Schedule</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📈</span>
+                        <span class="label">CRM Update</span>
+                    </div>
+                </div>
+                <div class="demo-result">
+                    <h4>Result:</h4>
+                    <p>Leads are qualified using AI analysis of their behavior, receive instant text responses (key for real estate!), and showings are scheduled directly on your calendar with automated reminders.</p>
+                </div>
+            </div>
+            
+            <div class="demo-content" id="demo-ecommerce">
+                <h3 style="margin-bottom: 1rem;">Customer Retention Automation</h3>
+                <div class="demo-workflow">
+                    <div class="demo-node">
+                        <span class="icon">🛒</span>
+                        <span class="label">Purchase</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">📦</span>
+                        <span class="label">Shipping</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">🎁</span>
+                        <span class="label">Post-Purchase</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">⭐</span>
+                        <span class="label">Review Req</span>
+                    </div>
+                    <span class="demo-arrow">→</span>
+                    <div class="demo-node">
+                        <span class="icon">🔄</span>
+                        <span class="label">Reorder</span>
+                    </div>
+                </div>
+                <div class="demo-result">
+                    <h4>Result:</h4>
+                    <p>Complete post-purchase journey automation including shipping updates, thank you sequences, review requests timed perfectly, and reorder reminders - all maximizing customer lifetime value.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <h2 class="section-title">Simple, <span class="gradient-text">Transparent</span> Pricing</h2>
+        <p class="section-subtitle">No hidden fees, no surprise charges. Just powerful automation.</p>
+        
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <span class="badge">No Credit Card Required</span>
+                <h3>Free Trial</h3>
+                <div class="price">$0<span>/7 days</span></div>
+                <p class="description">Try AI automation risk-free</p>
+                <ul>
+                    <li>2 Demo Workflows</li>
+                    <li>Up to 50 tasks</li>
+                    <li>Email Support</li>
+                    <li>Basic Integrations</li>
+                    <li>Onboarding Call</li>
+                </ul>
+                <button class="btn btn-primary" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Start Free Trial</button>
+            </div>
+
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <div class="price">$297<span>/month</span></div>
+                <p class="description">Perfect for solo entrepreneurs getting started with automation</p>
+                <ul>
+                    <li>3 Main Workflows</li>
+                    <li>Up to 500 tasks/month</li>
+                    <li>Email Support</li>
+                    <li>Basic Integrations</li>
+                    <li>Monthly Reporting</li>
+                </ul>
+                <button class="btn btn-secondary" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Get Started</button>
+            </div>
+            
+            <div class="pricing-card featured">
+                <span class="badge">Most Popular</span>
+                <h3>Professional</h3>
+                <div class="price">$597<span>/month</span></div>
+                <p class="description">For growing businesses that need serious automation power</p>
+                <ul>
+                    <li>5 Main Workflows</li>
+                    <li>Up to 2,000 tasks/month</li>
+                    <li>Priority Support</li>
+                    <li>All Integrations</li>
+                    <li>Weekly Reporting</li>
+                    <li>Custom AI Prompts</li>
+                    <li>Quarterly Optimization</li>
+                </ul>
+                <button class="btn btn-primary" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Get Started</button>
+            </div>
+            
+            <div class="pricing-card">
+                <h3>Enterprise</h3>
+                <div class="price">$797<span>/month</span></div>
+                <p class="description">Full-scale automation for established businesses</p>
+                <ul>
+                    <li>Unlimited Workflows</li>
+                    <li>Unlimited Tasks</li>
+                    <li>Dedicated Account Manager</li>
+                    <li>Custom Development</li>
+                    <li>Daily Reporting</li>
+                    <li>Advanced AI Training</li>
+                    <li>Monthly Strategy Calls</li>
+                </ul>
+                <button class="btn btn-secondary" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Contact Us</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <h2 class="section-title">Ready to <span class="gradient-text">Automate</span>?</h2>
+        <p class="section-subtitle">Book your free 30-minute consultation and see how we can help</p>
+        
+        <form class="contact-form" id="contactForm" action="https://formspree.io/f/mjgpkvjo" method="POST">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="John Smith" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="john@business.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="business">Business Type</label>
+                <select id="business" name="business" required>
+                    <option value="">Select your industry...</option>
+                    <option value="medical">Medical Practice (Gynecologist, Dentist, etc.)</option>
+                    <option value="handyman">Home Services (Handyman, Plumber, HVAC)</option>
+                    <option value="realtor">Real Estate (Agent, Broker)</option>
+                    <option value="professional">Professional Services (Accountant, Lawyer)</option>
+                    <option value="ecommerce">E-commerce / Retail</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Tell us about your biggest automation challenge</label>
+                <textarea id="message" name="message" placeholder="What tasks take up most of your time? What would you automate if you could?"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="submitBtn">Book My Free Consultation</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 AI Nodes. Powered by n8n. Built for businesses like yours.</p>
+        <p style="margin-top: 0.5rem;">
+            <a href="privacy.html" style="color: var(--gray); text-decoration: none; font-size: 0.9rem;">Privacy Policy</a> · 
+            <a href="terms.html" style="color: var(--gray); text-decoration: none; font-size: 0.9rem;">Terms of Service</a>
+        </p>
+    </footer>
+
+    <script>
+        // Three.js 3D Background
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: document.getElementById('canvas-container'),
+            alpha: true,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Create floating geometric shapes
+        const geometries = [];
+        const materials = [
+            new THREE.MeshBasicMaterial({ color: 0x23DCF0, wireframe: true, transparent: true, opacity: 0.3 }),
+            new THREE.MeshBasicMaterial({ color: 0x9A23F0, wireframe: true, transparent: true, opacity: 0.3 }),
+            new THREE.MeshBasicMaterial({ color: 0xF73674, wireframe: true, transparent: true, opacity: 0.3 })
+        ];
+
+        // Create multiple shapes
+        for (let i = 0; i < 30; i++) {
+            const geometryType = Math.floor(Math.random() * 3);
+            let geometry;
+            
+            switch(geometryType) {
+                case 0:
+                    geometry = new THREE.IcosahedronGeometry(Math.random() * 0.5 + 0.2);
+                    break;
+                case 1:
+                    geometry = new THREE.OctahedronGeometry(Math.random() * 0.5 + 0.2);
+                    break;
+                case 2:
+                    geometry = new THREE.TetrahedronGeometry(Math.random() * 0.5 + 0.2);
+                    break;
+            }
+            
+            const material = materials[Math.floor(Math.random() * materials.length)];
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            mesh.position.x = (Math.random() - 0.5) * 20;
+            mesh.position.y = (Math.random() - 0.5) * 20;
+            mesh.position.z = (Math.random() - 0.5) * 20;
+            
+            mesh.rotation.x = Math.random() * Math.PI;
+            mesh.rotation.y = Math.random() * Math.PI;
+            
+            mesh.userData = {
+                rotationSpeed: {
+                    x: (Math.random() - 0.5) * 0.01,
+                    y: (Math.random() - 0.5) * 0.01
+                },
+                floatSpeed: Math.random() * 0.002 + 0.001,
+                floatOffset: Math.random() * Math.PI * 2
+            };
+            
+            scene.add(mesh);
+            geometries.push(mesh);
+        }
+
+        // Create connection lines
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x23DCF0, transparent: true, opacity: 0.1 });
+        for (let i = 0; i < 20; i++) {
+            const points = [];
+            const startPoint = new THREE.Vector3(
+                (Math.random() - 0.5) * 20,
+                (Math.random() - 0.5) * 20,
+                (Math.random() - 0.5) * 20
+            );
+            const endPoint = new THREE.Vector3(
+                (Math.random() - 0.5) * 20,
+                (Math.random() - 0.5) * 20,
+                (Math.random() - 0.5) * 20
+            );
+            points.push(startPoint, endPoint);
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, lineMaterial);
+            scene.add(line);
+        }
+
+        camera.position.z = 10;
+
+        let mouseX = 0;
+        let mouseY = 0;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.001;
+            
+            geometries.forEach((mesh) => {
+                mesh.rotation.x += mesh.userData.rotationSpeed.x;
+                mesh.rotation.y += mesh.userData.rotationSpeed.y;
+                mesh.position.y += Math.sin(time * mesh.userData.floatSpeed * 100 + mesh.userData.floatOffset) * 0.002;
+            });
+            
+            camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+            camera.position.y += (mouseY * 2 - camera.position.y) * 0.02;
+            camera.lookAt(scene.position);
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            
+            const colors = ['#23DCF0', '#9A23F0', '#F73674'];
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            particlesContainer.appendChild(particle);
+        }
+
+        // Workflow node interaction
+        const workflowNodes = document.querySelectorAll('.workflow-node');
+        const workflowInfo = document.getElementById('workflow-info');
+        const workflowDescriptions = {
+            'Lead Capture': '<h3>📝 Lead Capture</h3><p>Form submissions trigger the workflow, automatically capturing lead information from your website, landing pages, or social media. No more lost leads from manual entry!</p>',
+            'AI Analysis': '<h3>🤖 AI Analysis</h3><p>GPT-4 analyzes each lead in seconds - scoring potential value, identifying intent signals, and categorizing by product interest or service need. Instant insights without the manual work.</p>',
+            'Smart Routing': '<h3>🎯 Smart Routing</h3><p>Based on your rules, leads are automatically assigned to the right team member. Geographic routing, skill matching, and workload balancing - all handled automatically.</p>',
+            'Auto Response': '<h3>💬 Auto Response</h3><p>Personalized emails and SMS messages sent instantly. No more delayed responses or missed opportunities. Each message is customized based on the lead\'s source and profile.</p>',
+            'Task Complete': '<h3>✅ Task Complete</h3><p>Tasks created in your project management tool, calendar events scheduled, CRM updated with all relevant data. Everything flows automatically to where it needs to go.</p>'
+        };
+
+        workflowNodes.forEach(node => {
+            node.addEventListener('mouseenter', () => {
+                const label = node.querySelector('.label').textContent;
+                workflowInfo.innerHTML = workflowDescriptions[label] || '';
+                workflowInfo.style.borderLeftColor = '#23DCF0';
+            });
+            
+            node.addEventListener('click', () => {
+                workflowNodes.forEach(n => n.classList.remove('active'));
+                node.classList.add('active');
+            });
+        });
+
+        // Demo tabs interaction
+        const demoTabs = document.querySelectorAll('.demo-tab');
+        const demoContents = document.querySelectorAll('.demo-content');
+
+        demoTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const demoId = tab.dataset.demo;
+                
+                demoTabs.forEach(t => t.classList.remove('active'));
+                demoContents.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`demo-${demoId}`).classList.add('active');
+            });
+        });
+
+        // 3D Workflow rotation on scroll
+        const workflow3d = document.getElementById('workflow3d');
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const rotation = scrolled * 0.05;
+            if (workflow3d) {
+                workflow3d.style.transform = `rotateY(${rotation}deg)`;
+            }
+        });
+
+        // Form submission with Formspree
+        const contactForm = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(contactForm);
+
+            try {
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    submitBtn.textContent = '✓ Consultation Booked!';
+                    submitBtn.style.background = 'linear-gradient(135deg, #23DCF0, #9A23F0)';
+                    contactForm.reset();
+                    
+                    setTimeout(() => {
+                        submitBtn.textContent = 'Book My Free Consultation';
+                        submitBtn.disabled = false;
+                    }, 3000);
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            } catch (error) {
+                submitBtn.textContent = 'Error - Please Try Again';
+                submitBtn.disabled = false;
+                
+                setTimeout(() => {
+                    submitBtn.textContent = 'Book My Free Consultation';
+                }, 3000);
+            }
+        });
+
+        // Smooth reveal animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.industry-card, .benefit-card, .pricing-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
